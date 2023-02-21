@@ -1,5 +1,7 @@
 #!/bin/bash
-cd docker
+cd app
+./mvnw clean package -DskipTests
+cd ../docker
 rm -r *.jar
 find ../app/target/ -name "*.jar" -exec cp '{}' ./ \;
 #find ../auth/target/ -name "*.jar" -exec cp '{}' ./ \;
