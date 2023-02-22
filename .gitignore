@@ -115,6 +115,7 @@ yarn-error.log
 .angular/
 .notes.md
 baseline.json
+dist/
 
 # Ignore .history for the xyz.local-history VSCode extension
 .history
