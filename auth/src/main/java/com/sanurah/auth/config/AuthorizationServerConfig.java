@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.sanurah.auth.jose.Jwks;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,8 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration(proxyBeanMethods = false)
 public class AuthorizationServerConfig {
@@ -45,12 +48,25 @@ public class AuthorizationServerConfig {
 		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
 				.oidc(Customizer.withDefaults());
 
+		http.cors(c -> {
+			CorsConfigurationSource source = s -> {
+				CorsConfiguration cc = new CorsConfiguration();
+				cc.setAllowCredentials(true);
+				cc.setAllowedOriginPatterns(List.of("*"));
+				cc.setAllowedHeaders(List.of("*"));
+				cc.setAllowedMethods(List.of("*"));
+				return cc;
+			};
+			c.configurationSource(source);
+		});
+
 		http
 				.exceptionHandling(exceptions ->
 						exceptions.authenticationEntryPoint(
 								new LoginUrlAuthenticationEntryPoint("http://localhost:4200/login"))
 				)
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+		http.csrf().disable();
 		// @formatter:on
 		return http.build();
 	}
@@ -65,14 +81,14 @@ public class AuthorizationServerConfig {
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-				.redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
-				.redirectUri("http://127.0.0.1:8080/authorized")
+				//.redirectUri("http://127.0.0.1:4200/login/oauth2/code/messaging-client-oidc")
+				.redirectUri("http://127.0.0.1:4200/authorized")
 				//.postLogoutRedirectUri("http://127.0.0.1:8080/index")
 				.scope(OidcScopes.OPENID)
 				.scope(OidcScopes.PROFILE)
 				.scope("message.read")
 				.scope("message.write")
-				.clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+				.clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
 				.build();
 
 		JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
