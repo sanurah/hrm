@@ -8,5 +8,9 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    database: postgresql
+    properties:
+      hibernate:
+        format_sql: true
