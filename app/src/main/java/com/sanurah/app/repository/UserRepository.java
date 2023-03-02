@@ -1,9 +1,10 @@
 package com.sanurah.app.repository;
 
+import com.sanurah.app.dao.User;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.core.userdetails.User;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    public User findUserByUsername(String username);
+    Optional<User> findUserByUsername(String username);
 }
