@@ -24,13 +24,25 @@ public class SecurityConfig {
         this.authenticationProvider = authenticationProvider;
     }
 
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(@NonNull CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedMethods("*")
+//                        .allowedOrigins("http://localhost:4200");
+//            }
+//        };
+//    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
