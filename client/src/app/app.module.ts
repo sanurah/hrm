@@ -5,16 +5,16 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {EmployeeComponent} from './employee/employee.component';
 import {HttpClientModule} from '@angular/common/http';
-import {RegisterEmployeeComponent} from './admin/register-employee/register-employee.component';
 import {ReactiveFormsModule} from "@angular/forms";
-import { LoginComponent } from './login/login.component';
+import {LoginComponent} from './login/login.component';
+import {RegisterUserComponent} from './admin/register-user/register-user.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     EmployeeComponent,
-    RegisterEmployeeComponent,
-    LoginComponent
+    LoginComponent,
+    RegisterUserComponent
   ],
   imports: [
     BrowserModule,

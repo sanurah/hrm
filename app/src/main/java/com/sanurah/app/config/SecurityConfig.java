@@ -1,23 +1,20 @@
 package com.sanurah.app.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import java.util.Arrays;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -34,38 +31,36 @@ public class SecurityConfig {
     }
 
     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedMethods("*")
-                        .allowedOriginPatterns("http://localhost:4200");
-            }
-        };
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cc = new CorsConfiguration();
+        cc.setAllowCredentials(true);
+        cc.setAllowedOriginPatterns(List.of("http://localhost:4200"));
+        cc.setAllowedHeaders(List.of("*"));
+        cc.setAllowedMethods(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cc);
+        return source;
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public CsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        return repository;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         return http
-                .cors(withDefaults())
+                .csrf().ignoringRequestMatchers("/api/v1/auth/**").csrfTokenRepository(csrfTokenRepository())
+                .and()
+                .cors()
+                .and()
                 .formLogin(form -> {
                     form.loginPage("http://localhost:4200/login").permitAll();
                 })
-                .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
