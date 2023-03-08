@@ -1,10 +1,10 @@
 package com.sanurah.app.dto;
 
-public class AuthenticationResponse {
+public class JwtToken {
 
     private String token;
 
-    public AuthenticationResponse(String token) {
+    public JwtToken(String token) {
         this.token = token;
     }
 

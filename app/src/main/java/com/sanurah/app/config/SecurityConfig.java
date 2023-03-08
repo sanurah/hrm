@@ -52,7 +52,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf().ignoringRequestMatchers("/api/v1/auth/**").csrfTokenRepository(csrfTokenRepository())
+                .csrf().csrfTokenRepository(csrfTokenRepository())
                 .and()
                 .cors()
                 .and()

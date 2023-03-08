@@ -2,38 +2,30 @@ package com.sanurah.app.service;
 
 import com.sanurah.app.config.Role;
 import com.sanurah.app.dao.User;
-import com.sanurah.app.dto.AuthenticationRequest;
-import com.sanurah.app.dto.AuthenticationResponse;
-import com.sanurah.app.dto.RegisterRequest;
-import com.sanurah.app.repository.UserRepository;
-import jakarta.persistence.EntityExistsException;
+import com.sanurah.app.dto.Authentication;
+import com.sanurah.app.dto.JwtToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+    public AuthenticationService(UserService userService, PasswordEncoder passwordEncoder,
             JwtService jwtService, AuthenticationManager authenticationManager) {
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse register(RegisterRequest request) {
-
-        if (userRepository.findUserByUsername(request.getUsername()).isPresent()) {
-            throw new EntityExistsException("User with username: " + request.getUsername() + " exists.");
-        }
+    public JwtToken register(Authentication request) {
 
         User user = new User();
         user.setUsername(request.getUsername());
@@ -43,19 +35,23 @@ public class AuthenticationService {
         user.setAccountNonLocked(true);
         user.setCredentialsNonExpired(true);
         user.setRole(Role.ADMIN);
+        user = userService.registerUser(user);
 
-        UserDetails userDetails = userRepository.save(user);
-
-        String jwt = jwtService.generateToken(userDetails);
-
-        return new AuthenticationResponse(jwt);
+        String jwt = jwtService.generateToken(user);
+        return new JwtToken(jwt);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public JwtToken authenticate(Authentication request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        User user = userRepository.findUserByUsername(request.getUsername()).orElseThrow();
+        User user = userService.loadUserByUsername(request.getUsername());
         String jwt = jwtService.generateToken(user);
-        return new AuthenticationResponse(jwt);
+        return new JwtToken(jwt);
+    }
+
+    public boolean validateToken(JwtToken jwt) {
+        String username = jwtService.extractUsername(jwt.getToken());
+        User user = userService.loadUserByUsername(username);
+        return jwtService.isTokenValid(jwt.getToken(), user);
     }
 }
