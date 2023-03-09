@@ -25,8 +25,8 @@ export class LoginComponent implements OnInit {
 
   onClickSubmit(auth: AuthModel) {
     return this.authService.login(auth).pipe(take(1)).subscribe(
-      () => {
-        //do something
+      (token) => {
+        console.log("token received ", token)
       }
     );
   }
