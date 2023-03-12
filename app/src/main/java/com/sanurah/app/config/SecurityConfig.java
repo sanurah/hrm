@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -22,15 +23,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFailureFilter jwtAuthenticationFailureFilter;
     private final AuthenticationProvider authenticationProvider;
-
     private AuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtAuthenticationFailureFilter jwtAuthenticationFailureFilter,
             AuthenticationProvider authenticationProvider,
             AppAuthenticationSuccessHandler authenticationSuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthenticationFailureFilter = jwtAuthenticationFailureFilter;
         this.authenticationProvider = authenticationProvider;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
     }
@@ -75,6 +78,7 @@ public class SecurityConfig {
                 .and()
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFailureFilter, AuthorizationFilter.class)
                 .build();
 
         //$2a$10$TDwxrOHunD7QL9RK.vBL5e3zJY1xli876jzrR5PqyrisW/293dYFW
