@@ -3,6 +3,7 @@ import {Observable} from "rxjs";
 import {HttpHeaders} from "@angular/common/http";
 import {HttpService} from "./http.service";
 import {AuthModel} from "../model/auth.model";
+import {SessionConstant} from "../constant/session.constant";
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,10 @@ export class AuthService {
     };
 
     return this.httpService.doPost("http://localhost:8080/api/v1/auth/register", auth, options);
+  }
+
+  getToken(): string | null {
+    return sessionStorage.getItem(SessionConstant.AUTH_TOKEN);
   }
 
 }
